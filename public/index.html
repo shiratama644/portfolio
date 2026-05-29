@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - Shiratama</title>
+
+    <!-- ★追加: クリティカルCSS (読み込み前から強制的に隠す) -->
+    <style>
+        /* 初期背景色（ダークモード前提） */
+        html, body {
+            background-color: #050505;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* ロード中はスクロール禁止 */
+        }
+        
+        /* ローディング画面（最前面・最強） */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #050505;
+            z-index: 99999; /* 確実に一番上 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+
+        /* コンテンツと背景Canvasは最初は透明にする */
+        #smooth-wrapper, #bg-canvas {
+            opacity: 0;
+            /* 表示時のアニメーション設定 */
+            transition: opacity 1.5s ease-out; 
+            will-change: opacity;
+        }
+
+        /* 読み込み完了時のクラス */
+        body.is-loaded #smooth-wrapper,
+        body.is-loaded #bg-canvas {
+            opacity: 1;
+        }
+        
+        body.is-loaded #loader {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* スピナーのデザイン */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+    
+    <!-- Shoelace UI -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/themes/dark.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/shoelace-autoloader.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css"> <!-- 先に読み込む -->
+    <link rel="stylesheet" href="css/liquid.css"> <!-- 後に読み込む（これで上書きできる） -->
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="preload">
+    
+    <!-- ★追加: ガラスの質感を生成するSVGフィルター (非表示) -->
+    <svg style="display: none;">
+        <defs>
+            <filter id="glass-noise">
+                <!-- ノイズを生成 -->
+                <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" result="noise"/>
+                <!-- 透明度を調整 -->
+                <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.05 0" in="noise" result="coloredNoise"/>
+                <!-- 元の画像と合成 -->
+                <feComposite operator="in" in="coloredNoise" in2="SourceGraphic" result="composite"/>
+            </filter>
+        </defs>
+    </svg>
+    
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Three.js Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Smooth Scroll Wrapper (Lenis) -->
+    <div id="smooth-wrapper">
+        <div id="content">
+            
+            <!-- Main Container -->
+            <main class="container">
+                
+                <!-- Profile Header -->
+                <header class="profile-section gs-reveal">
+                    <!-- アイコンとテキストをまとめるラッパー -->
+                    <div class="profile-content">
+                        <img id="profile-avatar" src="" alt="Profile" class="profile-img">
+                        <div class="profile-info">
+                            <h1 id="profile-name">Loading...</h1>
+                            <p id="profile-role">Loading...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="link-icon">
+                        <i data-lucide="link"></i>
+                    </div>
+                </header>
+                
+                <!-- Social Links -->
+                <nav class="social-nav gs-reveal" id="social-list">
+                    <!-- Injected by JS -->
+                </nav>
+
+                <hr class="divider gs-reveal">
+
+                <!-- Blog Section -->
+                <section class="blog-section gs-reveal">
+                    <div class="section-header">
+                        <h2><i data-lucide="flask-conical"></i> Blog</h2>
+                        <a href="#" class="view-all">View All Posts <i data-lucide="arrow-up-right"></i></a>
+                    </div>
+                    <div class="blog-list" id="blog-list">
+                        <!-- Injected by JS -->
+                    </div>
+                </section>
+
+                <hr class="divider gs-reveal">
+
+                <!-- Music Section -->
+                <section class="music-section gs-reveal">
+                    <div class="section-header">
+                        <h2><i data-lucide="music"></i> Music I'm Vibin' to</h2>
+                    </div>
+                    
+                    <div class="music-card" id="music-card">
+                        <!-- Injected by JS -->
+                    </div>
+                </section>
+
+                <!-- Spacer for bottom dock -->
+                <div style="height: 120px;"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Floating Bottom Dock (iOS Style) -->
+    <nav class="dock-container">
+        <div class="dock">
+            <button class="dock-item active"><i data-lucide="home"></i></button>
+            <button class="dock-item"><i data-lucide="palette"></i></button>
+            <button class="dock-item"><i data-lucide="file-text"></i></button>
+            <button class="dock-item"><i data-lucide="search"></i></button>
+            <div class="dock-separator"></div>
+            <!-- Theme Toggle Button -->
+            <button class="dock-item" id="theme-toggle"><i data-lucide="moon"></i></button>
+        </div>
+    </nav>
+    
+    <!-- Vanilla-tilt.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Lenis -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <!-- Three.js & PostProcessing -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <!-- Main Scripts -->
+    <script type="module" src="js/background.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

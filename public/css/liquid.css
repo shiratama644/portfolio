@@ -1,0 +1,146 @@
+/* css/liquid.css */
+
+:root {
+    /* --- Dark Mode (Default) --- */
+    /* ガラスのベース色（透明度は極限まで下げるが、色は存在させる） */
+    --glass-base: rgba(20, 20, 20, 0.4);
+    /* 境界線の色（上と左を明るくして立体感を出す） */
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-border-highlight: rgba(255, 255, 255, 0.4);
+    /* 影（ドロップシャドウ + インナーシャドウで厚みを出す） */
+    --glass-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 0 20px rgba(255, 255, 255, 0.05);
+    
+    /* ★重要: 背景をどれくらいぼかして、どれくらい色を強調するか */
+    --glass-blur: 40px;       /* 強力なぼかし */
+    --glass-saturate: 220%;   /* 背景色を2.2倍に強調（これが「色を拾う」鍵） */
+    --glass-brightness: 1.1;  /* 少し明るくしてガラスの発光感を出す */
+}
+
+body.light-mode {
+    --glass-base: rgba(255, 255, 255, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-border-highlight: rgba(255, 255, 255, 0.9);
+    --glass-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    
+    --glass-blur: 50px;
+    --glass-saturate: 180%;
+    --glass-brightness: 1.05;
+}
+
+/* --- The Liquid Card Component --- */
+.liquid-card {
+    position: relative;
+    /* コンテンツがはみ出さないように */
+    overflow: hidden; 
+    border-radius: 28px;
+    
+    /* 3D変形のための設定 */
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    
+    /* 背景色自体は透明にする（擬似要素で表現するため） */
+    background: transparent;
+    
+    /* 境界線はbox-shadowで表現するためborderはなし */
+    border: none;
+    
+    /* 影の適用 */
+    box-shadow: var(--glass-shadow);
+}
+
+/* --- ガラス層 (The Glass Layer) --- */
+/* コンテンツの下に敷く「物理的なガラス」の層 */
+.liquid-card::before {
+    content: "";
+    position: absolute;
+    inset: 0; /* top, right, bottom, left: 0 と同じ */
+    z-index: -1; /* コンテンツの後ろへ */
+    
+    /* 1. ベースカラー（薄く） */
+    background-color: var(--glass-base);
+    
+    /* 2. 背景の取り込み処理 (ここが核心) */
+    /* blur: 背景をぼかす */
+    /* saturate: 背景の色味を強烈に引き上げる */
+    /* brightness: ガラス自体の輝き */
+    backdrop-filter: 
+        blur(var(--glass-blur)) 
+        saturate(var(--glass-saturate)) 
+        brightness(var(--glass-brightness));
+    -webkit-backdrop-filter: 
+        blur(var(--glass-blur)) 
+        saturate(var(--glass-saturate)) 
+        brightness(var(--glass-brightness));
+
+    /* 3. ノイズテクスチャの適用 (HTMLで定義したSVGフィルター) */
+    /* これにより「つるつるのCG」ではなく「物質」に見える */
+    filter: url(#glass-noise);
+    
+    /* 4. 境界線の表現 (グラデーションボーダー) */
+    /* borderプロパティの代わりにmaskやinset box-shadowを使うテクニック */
+    border-radius: 28px;
+    
+    transition: background-color 0.3s ease;
+}
+
+/* --- リムライト (Rim Light) --- */
+/* ガラスの縁に光が当たっているような表現を追加 */
+.liquid-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 28px;
+    padding: 1px; /* ボーダーの太さ */
+    
+    /* グラデーションの枠線（左上が白く、右下が透明） */
+    background: linear-gradient(
+        135deg, 
+        var(--glass-border-highlight) 0%, 
+        var(--glass-border) 40%, 
+        rgba(255,255,255,0.05) 100%
+    );
+    
+    /* マスクを使って「枠線だけ」を表示するテクニック */
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    
+    pointer-events: none;
+}
+
+/* --- ホバー時のエフェクト --- */
+.liquid-card:active {
+    transform: scale(0.98);
+}
+
+/* ホバー時にガラスの透明度を少し上げて「光った」ように見せる */
+.liquid-card:hover::before {
+    background-color: rgba(255, 255, 255, 0.1); /* 少し白く光らせる */
+}
+
+/* --- テキストの視認性確保 --- */
+.liquid-text-main {
+    color: var(--text-primary);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    /* ガラスの上にあるように見せるためのドロップシャドウ */
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transform: translateZ(20px); /* 3D的に浮かせる */
+}
+
+.liquid-text-sub {
+    color: var(--text-secondary);
+    font-weight: 400;
+    opacity: 0.9;
+    transform: translateZ(15px);
+}

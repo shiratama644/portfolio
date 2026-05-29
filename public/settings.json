@@ -1,0 +1,56 @@
+{
+    "profile": {
+        "name": "Shiratama",
+        "role": "Web Developer",
+        "avatar": "assets/icon.png"
+    },
+    "socials": [
+        { "name": "X", "url": "#", "icon": "twitter" },
+        { "name": "Telegram", "url": "#", "icon": "send" },
+        { "name": "Discord", "url": "#", "icon": "message-circle" },
+        { "name": "Spotify", "url": "#", "icon": "music" }
+    ],
+    "blog": [
+        {
+            "title": "Building a Minecraft-Style Clone with Three.js",
+            "description": "Voxel rendering, chunk systems, and performant real-time interactions.",
+            "url": "#"
+        },
+        {
+            "title": "Optimizing a Rust Backend",
+            "description": "Improving throughput with async execution and low-level tuning.",
+            "url": "#"
+        },
+        {
+            "title": "Liquid Glass UI with React",
+            "description": "Glass-like surfaces using blur, translucency, and dynamic lighting.",
+            "url": "#"
+        },
+        {
+            "title": "Understanding SSR in Next.js",
+            "description": "Server-rendering strategies for speed, SEO, and user experience.",
+            "url": "#"
+        }
+    ],
+    "music": {
+        "title": "Notion",
+        "artist": "The Rare Occasions",
+        "cover": "https://i.scdn.co/image/ab67616d0000b273574c3db371192da1e75558d7",
+        "spotifyIcon": true
+    },
+    "background": {
+        "speed": 0.2,
+        "elevation": 1.5,
+        "wireframe": true,
+        "colors": {
+            "dark": {
+                "mesh": "#444444",
+                "bg": "#050505"
+            },
+            "light": {
+                "mesh": "#aaaaaa",
+                "bg": "#f2f2f7"
+            }
+        }
+    }
+}
